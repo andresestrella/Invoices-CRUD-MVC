@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -49,12 +48,15 @@ namespace SimpleWebAppMVC.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "CustName");
-            var viewModel = new InvoiceViewModel
-            {
-                Invoice = new Invoice(),
-                InvoiceDetails = new List<InvoiceDetail>()
-            };
-            return View(viewModel);
+            // var viewModel = new InvoiceViewModel
+            // {
+            //     Invoice = new Invoice(),
+            //     InvoiceDetails = new List<InvoiceDetail>()
+            // };
+            var invoice = new Invoice();
+            return View(invoice);
+
+            // return View(viewModel);
         }
 
         // POST: Invoices/Create
@@ -63,28 +65,28 @@ namespace SimpleWebAppMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         /*public async Task<IActionResult> Create([Bind("Id,CustomerId,TotalItbis,SubTotal,Total")] Invoice invoice)*/
-        public async Task<IActionResult> Create(InvoiceViewModel viewModel)
+        public async Task<IActionResult> Create(Invoice invoice)
         {
             if (ModelState.IsValid)
             {
                 // add to viewModel.Invoice.InvoiceDetails the items in viewModel.InvoiceDetails. keeping in mind that viewModel.InvoiceDetails is a list of InvoiceDetail objects and doesn't have a setter.
-                for (int i = 0; i < viewModel.InvoiceDetails.Count; i++)
-                {
-                    viewModel.Invoice.InvoiceDetails.Add(viewModel.InvoiceDetails[i]);
-                }
+                // for (int i = 0; i < viewModel.InvoiceDetails.Count; i++)
+                // {
+                //     viewModel.Invoice.InvoiceDetails.Add(viewModel.InvoiceDetails[i]);
+                // }
                 //viewModel.Invoice.InvoiceDetails.Union(viewModel.InvoiceDetails);
 
 
-                _context.Add(viewModel.Invoice);
-                /*                _context.Add(invoice);
-                */
+                // _context.Add(viewModel.Invoice);
+                _context.Add(invoice);
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", viewModel.Invoice.CustomerId);
+            // ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", viewModel.Invoice.CustomerId);
             /*            return View(invoice);
             */
-            return View(viewModel);
+            return View(invoice);
         }
 
         // GET: Invoices/Edit/5
