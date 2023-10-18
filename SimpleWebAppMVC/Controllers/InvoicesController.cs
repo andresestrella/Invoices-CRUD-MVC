@@ -49,7 +49,12 @@ namespace SimpleWebAppMVC.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "CustName");
-            return View();
+            var viewModel = new InvoiceViewModel
+            {
+                Invoice = new Invoice(),
+                InvoiceDetails = new List<InvoiceDetail>()
+            };
+            return View(viewModel);
         }
 
         // POST: Invoices/Create
@@ -57,16 +62,29 @@ namespace SimpleWebAppMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CustomerId,TotalItbis,SubTotal,Total")] Invoice invoice)
+        /*public async Task<IActionResult> Create([Bind("Id,CustomerId,TotalItbis,SubTotal,Total")] Invoice invoice)*/
+        public async Task<IActionResult> Create(InvoiceViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(invoice);
+                // add to viewModel.Invoice.InvoiceDetails the items in viewModel.InvoiceDetails. keeping in mind that viewModel.InvoiceDetails is a list of InvoiceDetail objects and doesn't have a setter.
+                for (int i = 0; i < viewModel.InvoiceDetails.Count; i++)
+                {
+                    viewModel.Invoice.InvoiceDetails.Add(viewModel.InvoiceDetails[i]);
+                }
+                //viewModel.Invoice.InvoiceDetails.Union(viewModel.InvoiceDetails);
+
+
+                _context.Add(viewModel.Invoice);
+                /*                _context.Add(invoice);
+                */
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", invoice.CustomerId);
-            return View(invoice);
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", viewModel.Invoice.CustomerId);
+            /*            return View(invoice);
+            */
+            return View(viewModel);
         }
 
         // GET: Invoices/Edit/5
@@ -162,7 +180,7 @@ namespace SimpleWebAppMVC.Controllers
 
         private bool InvoiceExists(int id)
         {
-          return _context.Invoices.Any(e => e.Id == id);
+            return _context.Invoices.Any(e => e.Id == id);
         }
     }
 }

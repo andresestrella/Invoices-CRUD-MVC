@@ -1,27 +1,10 @@
-﻿@model SimpleWebAppMVC.Models.Invoice
+﻿@model SimpleWebAppMVC.Models.InvoiceViewModel
 
 @{
 ViewData["Title"] = "Create";
 }
 
-<script>
-    var addButton = document.getElementById("addInvoiceDetailButton");
-    var container = document.getElementById("invoiceDetailsContainer");
-    var index = InvoiceDetails.Count;
 
-    addButton.addEventListener("click", function () {
-        var newDetail = document.createElement("div");
-        newDetail.className = "invoice-detail";
-
-        newDetail.innerHTML = `<label for="InvoiceDetails_${index}__Quantity">Quantity:</label>
-                                        <input type="number" name="InvoiceDetails[${index}].Quantity" step="1" required />
-                                        <label for="InvoiceDetails_${index}__Price">Price:</label>
-                                        <input type="number" name="InvoiceDetails[${index}].Price" step="0.01" required />`;
-
-        container.appendChild(newDetail);
-        index++;
-    });
-</script>
 
 <h2>Create</h2>
 
@@ -32,48 +15,184 @@ ViewData["Title"] = "Create";
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="CustomerId" class="control-label"></label>
-                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId"></select>
+                <label asp-for="Invoice.CustomerId" class="control-label"></label>
+                <select asp-for="Invoice.CustomerId" class="form-control" asp-items="ViewBag.CustomerId"></select>
             </div>
             <div class="form-group">
-                <label asp-for="TotalItbis" class="control-label"></label>
-                <input asp-for="TotalItbis" class="form-control" />
-                <span asp-validation-for="TotalItbis" class="text-danger"></span>
+                <label asp-for="Invoice.TotalItbis" class="control-label">Total ITBIS (18%)</label>
+                <input asp-for="Invoice.TotalItbis" readonly class="form-control" />
+                <span id="InvoiceTotalItbis" asp-validation-for="Invoice.TotalItbis" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="SubTotal" class="control-label"></label>
-                <input asp-for="SubTotal" class="form-control" />
-                <span asp-validation-for="SubTotal" class="text-danger"></span>
+                <label asp-for="Invoice.SubTotal" class="control-label"></label>
+                <input asp-for="Invoice.SubTotal" readonly class="form-control" />
+                <span id="InvoiceSubTotal" asp-validation-for="Invoice.SubTotal" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
+                <label asp-for="Invoice.Total" class="control-label"></label>
+                <input asp-for="Invoice.Total" readonly class="form-control" />
+                <span id="InvoiceTotal" asp-validation-for="Invoice.Total" class="text-danger"></span>
             </div>
 
 
+
+            <!-- InvoiceDetail Fields -->
             <div id="invoiceDetailsContainer">
-                @foreach (var item in Model.InvoiceDetails)
-                {
-                <div class="invoice-detail form-group">
-                    <label asp-for="@item.Qty" class="control-label">Quantity:</label>
-                    <input asp-for="@item.Qty" type="number" step="1" required />
-                    <span asp-validation-for="@item.Qty" class="text-danger"></span>
-                </div>
-                }
-            </div>
-            <button type="button" id="addInvoiceDetailButton">Add Invoice Detail</button>
+                @for (var i = 0; i < Model.InvoiceDetails.Count; i++) { <div class="invoice-detail">
+                    <hr>
+                    <span class="detail-number">Detail @( i + 1 )</span>
+                    <br>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-default" />
+                    <div class="form-group">
+                        <label asp-for="InvoiceDetails[@i].Qty" class="control-label"></label>
+                        <input asp-for="InvoiceDetails[@i].Qty" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="InvoiceDetails[@i].Price" class="control-label"></label>
+                        <input asp-for="InvoiceDetails[@i].Price" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="InvoiceDetails[@i].TotalItbis" class="control-label">Total ITBIS</label>
+                        <input asp-for="InvoiceDetails[@i].TotalItbis" readonly class="form-control" />
+                        <span asp-validation-for="InvoiceDetails[@i].TotalItbis" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="InvoiceDetails[@i].SubTotal" class="control-label"></label>
+                        <input asp-for="InvoiceDetails[@i].SubTotal" readonly class="form-control" />
+                        <span asp-validation-for="InvoiceDetails[@i].SubTotal" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="InvoiceDetails[@i].Total" class="control-label"></label>
+                        <input asp-for="InvoiceDetails[@i].Total" readonly class="form-control" />
+                        <span asp-validation-for="InvoiceDetails[@i].Total" class="text-danger"></span>
+                    </div>
             </div>
-        </form>
+            }
     </div>
+
+    <hr>
+    <button type="button" id="addInvoiceDetailButton" class="btn btn-primary">Add Invoice Detail</button>
+
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-default" />
+    </div>
+    </form>
+</div>
 </div>
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
+
+
+<script>
+    const ITBIS_PERCENTAGE = 0.18; // 18% ITBIS
+    var addButton = document.getElementById("addInvoiceDetailButton");
+    var container = document.getElementById("invoiceDetailsContainer");
+    let detailNumber = 0;
+    var invoiceDetails = []; // Array to store details for calculations
+
+    addButton.addEventListener("click", function () {
+
+        // Create and add a new detail markup
+        var newDetail = document.createElement("div");
+        newDetail.className = "invoice-detail";
+        newDetail.innerHTML = `<hr><span class="detail-number">Detail ${detailNumber + 1}</span> <br>
+        <div class="form-group">
+            <label class="control-label">Quantity</label>
+            <input type="number" min="1" required name="InvoiceDetails[${detailNumber}].Qty" class="form-control" value="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Price</label>
+            <input type="number" min="0" inputmode="decimal" required name="InvoiceDetails[${detailNumber}].Price" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Total ITBIS</label>
+            <input readonly name="InvoiceDetails[${detailNumber}].TotalItbis" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">SubTotal</label>
+            <input name="InvoiceDetails[${detailNumber}].SubTotal" readonly class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Total</label>
+            <input name="InvoiceDetails[${detailNumber}].Total" readonly class="form-control" />
+        </div>
+        `;
+
+        container.appendChild(newDetail);
+
+        // Add event listeners to the Quantity and Price inputs to automatically update totals
+        var quantityInput = newDetail.querySelector('input[name*="Qty"]');
+        var priceInput = newDetail.querySelector('input[name*="Price"]');
+        var totalItbisInput = newDetail.querySelector('input[name*="TotalItbis"]');
+        var subTotalInput = newDetail.querySelector('input[name*="SubTotal"]');
+        var totalInput = newDetail.querySelector(`input[name="InvoiceDetails[${detailNumber}].Total"]`);
+
+        quantityInput.addEventListener("input", updateSubTotalAndTotal);
+        priceInput.addEventListener("input", updateSubTotalAndTotal);
+
+        function updateSubTotalAndTotal() {
+            var quantity = parseFloat(quantityInput.value) || 0;
+            var price = parseFloat(priceInput.value) || 0;
+
+            var subTotal = quantity * price;
+            var totalItbis = subTotal * ITBIS_PERCENTAGE;
+            var total = subTotal + totalItbis;
+
+            subTotalInput.value = subTotal.toFixed(2);
+            totalItbisInput.value = totalItbis.toFixed(2);
+            totalInput.value = total.toFixed(2);
+
+            // Update the details array for calculations
+            invoiceDetails[detailNumber - 1] = {
+                subTotal: subTotal,
+                totalItbis: totalItbis,
+            };
+
+            // Calculate and update the Invoice Totals
+            updateInvoiceTotals();
+        }
+
+        detailNumber = detailNumber + 1;
+    });
+
+
+    function updateInvoiceTotals() {
+        var subTotal = 0;
+        var totalItbis = 0;
+
+        // Calculate the sum of subTotals and totalItbis for all details
+        for (var i = 0; i < invoiceDetails.length; i++) {
+            subTotal += invoiceDetails[i].subTotal;
+            totalItbis += invoiceDetails[i].totalItbis;
+        }
+
+        // Update Invoice SubTotal and Total ITBIS
+        var invoiceSubTotalInput = document.querySelector('input[name="Invoice.SubTotal"]');
+        var invoiceTotalItbisInput = document.querySelector('input[name="Invoice.TotalItbis"]');
+
+        invoiceSubTotalInput.value = subTotal.toFixed(2);
+        invoiceTotalItbisInput.value = totalItbis.toFixed(2);
+
+        // Update Invoice Total
+        var invoiceTotalInput = document.querySelector('input[name="Invoice.Total"]');
+        var invoiceTotal = subTotal + totalItbis;
+        invoiceTotalInput.value = invoiceTotal.toFixed(2);
+    }
+</script>
+
+<!-- <style> -->
+<!--     .invoice-detail { -->
+<!--         display: flex; -->
+<!--         justify-content: flex-start; -->
+<!--         align-items: center; -->
+<!--     } -->
+<!-- </style> -->
 
 @section Scripts {
 @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
