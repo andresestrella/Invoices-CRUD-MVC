@@ -12,4 +12,4 @@ Finalmente, cree los controladores y vistas necesarias para gestionar los client
 3. correr app `dotnet run` 
 
 # Video Demo
-*TODO*
+https://youtu.be/5Il5EvH059o
