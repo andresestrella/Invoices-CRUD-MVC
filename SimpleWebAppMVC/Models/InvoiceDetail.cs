@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace SimpleWebAppMVC.Models;
 
@@ -12,7 +9,7 @@ public partial class InvoiceDetail
     [Key]
     public int Id { get; set; }
 
-    public int CustomerId { get; set; }
+    public int InvoiceId { get; set; }
 
     public int Qty { get; set; }
 
@@ -28,7 +25,7 @@ public partial class InvoiceDetail
     [Column(TypeName = "money")]
     public decimal Total { get; set; }
 
-    [ForeignKey("CustomerId")]
+    [ForeignKey("InvoiceId")]
     [InverseProperty("InvoiceDetails")]
-    public virtual Invoice Customer { get; set; }
+    public virtual Invoice Invoice { get; set; }
 }

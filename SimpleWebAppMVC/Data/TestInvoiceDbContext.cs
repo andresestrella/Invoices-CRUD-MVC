@@ -22,7 +22,7 @@ public partial class TestInvoiceDbContext : DbContext
     {
     }
 
-    
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=Test_Invoice;Trusted_Connection=True;");
     // TODO: Use IConfiguration to get the connection string
@@ -53,7 +53,7 @@ public partial class TestInvoiceDbContext : DbContext
 
         modelBuilder.Entity<InvoiceDetail>(entity =>
         {
-            entity.HasOne(d => d.Customer).WithMany(p => p.InvoiceDetails).HasConstraintName("FK_InvoiceDetail_Invoice");
+            entity.HasOne(d => d.Invoice).WithMany(p => p.InvoiceDetails).HasConstraintName("FK_InvoiceDetail_Invoice");
         });
 
         OnModelCreatingPartial(modelBuilder);

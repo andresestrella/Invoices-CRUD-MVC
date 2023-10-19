@@ -48,15 +48,9 @@ namespace SimpleWebAppMVC.Controllers
         public IActionResult Create()
         {
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "CustName");
-            // var viewModel = new InvoiceViewModel
-            // {
-            //     Invoice = new Invoice(),
-            //     InvoiceDetails = new List<InvoiceDetail>()
-            // };
             var invoice = new Invoice();
             return View(invoice);
 
-            // return View(viewModel);
         }
 
         // POST: Invoices/Create
@@ -69,23 +63,12 @@ namespace SimpleWebAppMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                // add to viewModel.Invoice.InvoiceDetails the items in viewModel.InvoiceDetails. keeping in mind that viewModel.InvoiceDetails is a list of InvoiceDetail objects and doesn't have a setter.
-                // for (int i = 0; i < viewModel.InvoiceDetails.Count; i++)
-                // {
-                //     viewModel.Invoice.InvoiceDetails.Add(viewModel.InvoiceDetails[i]);
-                // }
-                //viewModel.Invoice.InvoiceDetails.Union(viewModel.InvoiceDetails);
 
-
-                // _context.Add(viewModel.Invoice);
                 _context.Add(invoice);
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            // ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", viewModel.Invoice.CustomerId);
-            /*            return View(invoice);
-            */
             return View(invoice);
         }
 
@@ -97,12 +80,15 @@ namespace SimpleWebAppMVC.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices.FindAsync(id);
+            var invoice = await _context.Invoices.Include(i => i.InvoiceDetails).FirstOrDefaultAsync(i => i.Id == id);
             if (invoice == null)
             {
                 return NotFound();
             }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Adress", invoice.CustomerId);
+            ViewData["CustomerList"] = new SelectList(_context.Customers, "Id", "CustName", invoice.CustomerId);
+
+            var invoiceDetails = _context.InvoiceDetails.Where(i => i.InvoiceId == id).ToList();
+
             return View(invoice);
         }
 
@@ -111,7 +97,7 @@ namespace SimpleWebAppMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CustomerId,TotalItbis,SubTotal,Total")] Invoice invoice)
+        public async Task<IActionResult> Edit(int id, Invoice invoice)
         {
             if (id != invoice.Id)
             {
