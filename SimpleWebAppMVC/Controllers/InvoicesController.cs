@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -87,7 +86,7 @@ namespace SimpleWebAppMVC.Controllers
             }
             ViewData["CustomerList"] = new SelectList(_context.Customers, "Id", "CustName", invoice.CustomerId);
 
-            var invoiceDetails = _context.InvoiceDetails.Where(i => i.InvoiceId == id).ToList();
+            // var invoiceDetails = _context.InvoiceDetails.Where(i => i.InvoiceId == id).ToList();
 
             return View(invoice);
         }

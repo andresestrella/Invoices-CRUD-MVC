@@ -12,7 +12,7 @@ ViewData["Title"] = "Edit";
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+            <!-- <input type="hidden" asp-for="Id" /> -->
             <div class="form-group">
                 <label asp-for="CustomerId" class="control-label"></label>
                 <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerList"></select>
@@ -42,10 +42,10 @@ ViewData["Title"] = "Edit";
                     <span class="detail-number">Detail @(i+1)</span>
                     <br>
                     <!-- hidden inputs for the InvoiceDetail Id and InvoiceId -->
-                    <input type="hidden" asp-for="InvoiceDetails.ElementAt(i).Id" id="InvoiceDetails[@i].Id"
-                        name="InvoiceDetails[@i].Id" class="form-control" />
+                    <input type="hidden" asp-for="@Model.InvoiceDetails.ElementAt(i).Id" id="InvoiceDetails[@i].Id"
+                        name="InvoiceDetails[@i].Id" value="@Model.InvoiceDetails.ElementAt(i).Id" class="form-control" />
 
-                    <input type="hidden" asp-for="Id"
+                    <input type="hidden" asp-for="InvoiceDetails.ElementAt(i).InvoiceId"
                         id="InvoiceDetails[@i].InvoiceId" name="InvoiceDetails[@i].InvoiceId"
                         class="form-control" />
 
@@ -122,11 +122,6 @@ ViewData["Title"] = "Edit";
     }
 
     function updateSubTotalAndTotal(detailIndex) {
-        // Add event listeners to the Quantity and Price inputs to automatically update totals
-        // var quantityInput = newDetail.querySelector('input[name*="Qty"]');
-        // var priceInput = newDetail.querySelector('input[name*="Price"]');
-        // var totalItbisInput = newDetail.querySelector('input[name*="TotalItbis"]');
-        // var subTotalInput = newDetail.querySelector('input[name*="SubTotal"]');
         var quantityInput = document.querySelector(`input[name="InvoiceDetails[${detailIndex}].Qty"]`);
         var priceInput = document.querySelector(`input[name="InvoiceDetails[${detailIndex}].Price"]`);
         var totalItbisInput = document.querySelector(`input[name="InvoiceDetails[${detailIndex}].TotalItbis"]`);
